@@ -12,7 +12,7 @@
     "url": "git+https://github.com/ra100/prometheus-carshare-exporter.git"
   },
   "author": "ra100",
-  "license": "MIT",
+  "license": "WTFPL",
   "bugs": {
     "url": "https://github.com/ra100/prometheus-carshare-exporter/issues"
   },
