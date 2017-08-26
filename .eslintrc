@@ -1,0 +1,22 @@
+{
+  "extends": "airbnb",
+  "parserOptions" : {
+    "ecmaFeatures" : {
+     "spread" : true,
+     "blockBindings" : true,
+     "destructuring" : true,
+     "templateStrings" : true,
+     "jsx" : true,
+     "generators" : true,
+     "defaultParams" : true,
+     "modules" : true,
+     "arrowFunctions" : true,
+     "forOf" : true,
+     "classes" : true
+    }
+  },
+  "rules": {
+    "comma-dangle": ["error", "never"],
+    "semi": ["error", "never"]
+  }
+}
