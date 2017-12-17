@@ -1,5 +1,6 @@
 {
-  "api": "https://api.instacarshare.com/someclient/search?",
-  "namespace": "myspace",
-  "port": 9017
+  "api": "https://www.car4way.cz/Upload/data_2017.json",
+  "namespace": "car4way",
+  "port": 9017,
+  "source": "car4way"
 }
