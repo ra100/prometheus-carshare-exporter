@@ -1,4 +1,4 @@
-import defaultConfig from './default.json'
+const defaultConfig = require('./default.json')
 
 let config = {
   ...defaultConfig
@@ -14,6 +14,6 @@ try {
   console.log(e) // eslint-disable-line no-console
 }
 
-export default {
+module.exports = {
   ...config
 }

@@ -15,6 +15,10 @@
      "classes" : true
     }
   },
+  "plugins": ["jest"],
+  "env": {
+    "jest/globals": true
+  },
   "rules": {
     "comma-dangle": ["error", "never"],
     "semi": ["error", "never"]
