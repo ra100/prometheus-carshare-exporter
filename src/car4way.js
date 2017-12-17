@@ -17,14 +17,20 @@ const client = axios.create({
 const parseData = (data) => {
   const { locations, car_categories } = data
   const categories = {}
-  let transformed = []
+  const transformedLocations = []
+  let cars = []
   car_categories.forEach((category) => {
     categories[category.category_id] = category
   })
   locations.forEach((location) => {
-    const city = location.city
+    const { city } = location
     const locationName = location.location_name
-    transformed = transformed.concat(location.cars.map((car) => {
+    transformedLocations.push({
+      name: locationName,
+      total: location.cars.length,
+      city
+    })
+    cars = cars.concat(location.cars.map((car) => {
       const type = categories[car.car_category_id].category_name
       return {
         name: `${type} - ${car.id}`,
@@ -38,7 +44,7 @@ const parseData = (data) => {
       }
     }))
   })
-  return transformed
+  return { locations: transformedLocations, cars }
 }
 
 // car4way returns var data = {}; in .json, WTF?
@@ -55,8 +61,8 @@ const getData = config =>
       return {}
     })
 
-const updateMetrics = (data) => {
-  data.forEach((car) => {
+const updateMetrics = ({ locations, cars }) => {
+  cars.forEach((car) => {
     const carLabels = {
       name: car.name,
       id: car.id,
@@ -68,14 +74,16 @@ const updateMetrics = (data) => {
     prometheus.get('car_lat').set(carLabels, car.lat)
     prometheus.get('car_lng').set(carLabels, car.lng)
   })
-  prometheus.get('cars_total').set(data.length)
+  locations.forEach(({ name, city, total }) => {
+    prometheus.get('cars_total').set({ name, city }, total)
+  })
 }
 
 module.exports = (config) => {
   prometheus.setNamespace(config.namespace)
   prometheus.createGauge('car_lat', 'Latitude position of car', LABELS)
   prometheus.createGauge('car_lng', 'Longitude position of car', LABELS)
-  prometheus.createGauge('cars_total', 'Total available cars')
+  prometheus.createGauge('cars_total', 'Total available cars', ['name', 'city'])
   return {
     parseData,
     getData: () => getData(config),
