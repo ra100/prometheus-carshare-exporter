@@ -25,10 +25,18 @@ const parseData = (data) => {
   locations.forEach((location) => {
     const { city } = location
     const locationName = location.location_name
-    transformedLocations.push({
-      name: locationName,
-      total: location.cars.length,
-      city
+    const locationTypes = {}
+    location.cars.forEach((car) => {
+      const type = categories[car.car_category_id].category_name
+      locationTypes[type] = (locationTypes[type] || 0) + 1
+    })
+    Object.entries(locationTypes).forEach(([type, count]) => {
+      transformedLocations.push({
+        name: locationName,
+        total: count,
+        type,
+        city
+      })
     })
     cars = cars.concat(location.cars.map((car) => {
       const type = categories[car.car_category_id].category_name
@@ -74,8 +82,10 @@ const updateMetrics = ({ locations, cars }) => {
     prometheus.get('car_lat').set(carLabels, car.lat)
     prometheus.get('car_lng').set(carLabels, car.lng)
   })
-  locations.forEach(({ name, city, total }) => {
-    prometheus.get('cars_total').set({ name, city }, total)
+  locations.forEach(({
+    name, city, type, total
+  }) => {
+    prometheus.get('cars_total').set({ name, city, type }, total)
   })
 }
 
@@ -83,7 +93,7 @@ module.exports = (config) => {
   prometheus.setNamespace(config.namespace)
   prometheus.createGauge('car_lat', 'Latitude position of car', LABELS)
   prometheus.createGauge('car_lng', 'Longitude position of car', LABELS)
-  prometheus.createGauge('cars_total', 'Total available cars', ['name', 'city'])
+  prometheus.createGauge('cars_total', 'Total available cars', ['name', 'city', 'type'])
   return {
     parseData,
     getData: () => getData(config),
