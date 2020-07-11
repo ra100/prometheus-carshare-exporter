@@ -18,18 +18,18 @@
   },
   "homepage": "https://github.com/ra100/prometheus-carshare-exporter#readme",
   "dependencies": {
-    "axios": "^0.17.1",
-    "express": "^4.16.2",
-    "prom-client": "^10.2.2",
+    "axios": "^0.19.2",
+    "express": "^4.17.1",
+    "prom-client": "^12.0.0",
     "prometheus-wrapper": "git+https://github.com/ra100/nodejs-prometheus-wrapper.git"
   },
   "devDependencies": {
-    "eslint": "^4.13.1",
-    "eslint-config-airbnb": "^16.1.0",
-    "eslint-plugin-import": "^2.8.0",
-    "eslint-plugin-jest": "^21.5.0",
-    "eslint-plugin-jsx-a11y": "^6.0.3",
-    "eslint-plugin-react": "^7.5.1",
-    "jest": "^21.2.1"
+    "eslint": "^7.4.0",
+    "eslint-config-airbnb": "^18.2.0",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-jest": "^23.18.0",
+    "eslint-plugin-jsx-a11y": "^6.3.1",
+    "eslint-plugin-react": "^7.20.3",
+    "jest": "^26.1.0"
   }
 }
