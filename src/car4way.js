@@ -1,7 +1,7 @@
 const prometheus = require('prometheus-wrapper')
 const axios = require('axios')
 
-const LABELS = ['name', 'id', 'license', 'type', 'location', 'city']
+const LABELS = ['name', 'id', 'license', 'type', 'location']
 
 const client = axios.create({
   timeout: 5000,

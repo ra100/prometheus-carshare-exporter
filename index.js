@@ -1,11 +1,13 @@
 const express = require('express')
 const config = require('./config')
 const car4way = require('./src/car4way')
+const revolt = require('./src/revolt')
 
 const { log } = console
 
 const source = {
   car4way,
+  revolt,
 }[config.source](config)
 
 const app = express()

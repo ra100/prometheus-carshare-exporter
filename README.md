@@ -9,6 +9,7 @@ be consumed by [prometheus.io](https://prometheus.io).
 
 Supported providers:
 - car4way
+- revolt
 
 ## How to run?
 
@@ -19,7 +20,9 @@ Copy `config/default.json` to `config/local.json` and change values, example:
   "api": "https://www.car4way.cz/Upload/data_2017.json", // API to get data from
   "namespace": "car4way", // namespace of the mertics in prometheus
   "port": 9090, // port where exporter will run
-  "source": "car4way" // which service to use, see supported providers
+  "source": "car4way", // which service to use, see supported providers
+  "username": "", // revolt login
+  "password": "" // revolt login password
 }
 ```
 

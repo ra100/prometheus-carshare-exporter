@@ -4,7 +4,9 @@ let config = {
   ...defaultConfig,
 }
 
-const configName = process.env.CONFIG_NAME || './local.json'
+const configName = process.env.CONFIG_NAME
+  ? `./${process.env.CONFIG_NAME}.local.json`
+  : './local.json'
 
 try {
   const localConfig = require(configName) // eslint-disable-line
