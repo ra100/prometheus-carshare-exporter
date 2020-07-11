@@ -1,18 +1,18 @@
 {
-  "extends": "airbnb",
+  "extends": ["airbnb", "prettier"],
   "parserOptions" : {
     "ecmaFeatures" : {
-     "spread" : true,
-     "blockBindings" : true,
-     "destructuring" : true,
-     "templateStrings" : true,
-     "jsx" : true,
-     "generators" : true,
-     "defaultParams" : true,
-     "modules" : true,
-     "arrowFunctions" : true,
-     "forOf" : true,
-     "classes" : true
+      "spread" : true,
+      "blockBindings" : true,
+      "destructuring" : true,
+      "templateStrings" : true,
+      "jsx" : true,
+      "generators" : true,
+      "defaultParams" : true,
+      "modules" : true,
+      "arrowFunctions" : true,
+      "forOf" : true,
+      "classes" : true
     }
   },
   "plugins": ["jest"],
@@ -20,7 +20,7 @@
     "jest/globals": true
   },
   "rules": {
-    "comma-dangle": ["error", "never"],
+    "comma-dangle": ["error", "only-multiline"],
     "semi": ["error", "never"]
   }
 }

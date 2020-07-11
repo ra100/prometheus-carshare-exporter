@@ -1,26 +1,23 @@
 const prometheus = require('prometheus-wrapper')
 const axios = require('axios')
 
-const LABELS = [
-  'name',
-  'id',
-  'license',
-  'type'
-]
+const LABELS = ['name', 'id', 'license', 'type']
 
 const client = axios.create({
-  timeout: 5000
+  timeout: 5000,
 })
 
 const parseData = (data) => {
-  const { cars, car_templates } = data
+  const { cars, car_templates: carTemplates } = data
   const now = Math.floor(Date.now() / 1000)
   const transformed = cars.map((car) => {
-    const carTemplate = car_templates.find(
-      template => template.id === car.car_template_id)
+    const carTemplate = carTemplates.find(
+      (template) => template.id === car.car_template_id
+    )
     const km = Math.round((car.fuel_level / 100) * carTemplate.range)
     const reserved = car.reservations.find(
-      reservation => reservation.start < now && reservation.end > now)
+      (reservation) => reservation.start < now && reservation.end > now
+    )
     return {
       name: car.name.replace('#', ''),
       id: car.id,
@@ -31,14 +28,15 @@ const parseData = (data) => {
       fuel: car.fuel_level,
       km,
       available: (!reserved && 1) || 0,
-      reservations: car.reservations.length
+      reservations: car.reservations.length,
     }
   })
   return transformed
 }
 
-const getData = config =>
-  client.get(config.api)
+const getData = (config) =>
+  client
+    .get(config.api)
     .then((response) => {
       const { data } = response
       return data
@@ -54,7 +52,7 @@ const updateMetrics = (data) => {
       name: car.name,
       id: car.id,
       license: car.license,
-      type: car.type
+      type: car.type,
     }
     prometheus.get('car_lat').set(carLabels, car.lat)
     prometheus.get('car_lng').set(carLabels, car.lng)
@@ -70,12 +68,16 @@ module.exports = (config) => {
   prometheus.createGauge('car_lng', 'Longitude position of car', LABELS)
   prometheus.createGauge('car_km', 'Travel distace with current fuel', LABELS)
   prometheus.createGauge('car_fuel', 'Fuel level', LABELS)
-  prometheus.createGauge('car_available', 'If car is currently available', LABELS)
+  prometheus.createGauge(
+    'car_available',
+    'If car is currently available',
+    LABELS
+  )
   prometheus.createGauge('car_reservations', 'Current car reservations', LABELS)
   return {
     parseData,
     getData: () => getData(config),
     updateMetrics,
-    getMetrics: prometheus.getMetrics
+    getMetrics: prometheus.getMetrics,
   }
 }

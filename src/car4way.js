@@ -1,25 +1,18 @@
 const prometheus = require('prometheus-wrapper')
 const axios = require('axios')
 
-const LABELS = [
-  'name',
-  'id',
-  'license',
-  'type',
-  'location',
-  'city'
-]
+const LABELS = ['name', 'id', 'license', 'type', 'location', 'city']
 
 const client = axios.create({
-  timeout: 5000
+  timeout: 5000,
 })
 
 const parseData = (data) => {
-  const { locations, car_categories } = data
+  const { locations, car_categories: carCategories } = data
   const categories = {}
   const transformedLocations = []
   let cars = []
-  car_categories.forEach((category) => {
+  carCategories.forEach((category) => {
     categories[category.category_id] = category
   })
   locations.forEach((location) => {
@@ -35,31 +28,35 @@ const parseData = (data) => {
         name: locationName,
         total: count,
         type,
-        city
+        city,
       })
     })
-    cars = cars.concat(location.cars.map((car) => {
-      const type = categories[car.car_category_id].category_name
-      return {
-        name: `${type} - ${car.id}`,
-        id: car.id,
-        license: car.license_plate_number,
-        type,
-        location: locationName,
-        city,
-        lat: Number(car.position.lat),
-        lng: Number(car.position.lon)
-      }
-    }))
+    cars = cars.concat(
+      location.cars.map((car) => {
+        const type = categories[car.car_category_id].category_name
+        return {
+          name: `${type} - ${car.id}`,
+          id: car.id,
+          license: car.license_plate_number,
+          type,
+          location: locationName,
+          city,
+          lat: Number(car.position.lat),
+          lng: Number(car.position.lon),
+        }
+      })
+    )
   })
   return { locations: transformedLocations, cars }
 }
 
 // car4way returns var data = {}; in .json, WTF?
-const makeValidJson = data => JSON.parse(data.replace(/^.*=\s*/, '').replace(';', ''))
+const makeValidJson = (data) =>
+  JSON.parse(data.replace(/^.*=\s*/, '').replace(';', ''))
 
-const getData = config =>
-  client.get(config.api)
+const getData = (config) =>
+  client
+    .get(config.api)
     .then((response) => {
       const { data } = response
       return makeValidJson(data)
@@ -77,14 +74,12 @@ const updateMetrics = ({ locations, cars }) => {
       license: car.license,
       type: car.type,
       location: car.location,
-      city: car.city
+      city: car.city,
     }
     prometheus.get('car_lat').set(carLabels, car.lat)
     prometheus.get('car_lng').set(carLabels, car.lng)
   })
-  locations.forEach(({
-    name, city, type, total
-  }) => {
+  locations.forEach(({ name, city, type, total }) => {
     prometheus.get('cars_total').set({ name, city, type }, total)
   })
 }
@@ -93,12 +88,16 @@ module.exports = (config) => {
   prometheus.setNamespace(config.namespace)
   prometheus.createGauge('car_lat', 'Latitude position of car', LABELS)
   prometheus.createGauge('car_lng', 'Longitude position of car', LABELS)
-  prometheus.createGauge('cars_total', 'Total available cars', ['name', 'city', 'type'])
+  prometheus.createGauge('cars_total', 'Total available cars', [
+    'name',
+    'city',
+    'type',
+  ])
   return {
     parseData,
     getData: () => getData(config),
     updateMetrics,
     getMetrics: prometheus.getMetrics,
-    makeValidJson
+    makeValidJson,
   }
 }

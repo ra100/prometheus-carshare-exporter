@@ -3,10 +3,10 @@ const config = require('./config')
 const carshare = require('./src/carshare')
 const car4way = require('./src/car4way')
 
-const source = ({
+const source = {
   carshare,
-  car4way
-})[config.source](config)
+  car4way,
+}[config.source](config)
 
 const app = express()
 
