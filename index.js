@@ -1,10 +1,10 @@
 const express = require('express')
 const config = require('./config')
-const carshare = require('./src/carshare')
 const car4way = require('./src/car4way')
 
+const { log } = console
+
 const source = {
-  carshare,
   car4way,
 }[config.source](config)
 
@@ -18,5 +18,5 @@ app.get('/metrics', async (req, res) => {
 })
 
 app.listen(config.port, () => {
-  console.log(`Listening on port ${config.port}`) // eslint-disable-line no-console
+  log(`Listening on port ${config.port}`)
 })
