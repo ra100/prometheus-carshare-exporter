@@ -3,11 +3,11 @@ const axios = require('axios')
 
 const { error } = console
 
-const LABELS = ['name', 'id', 'license', 'type']
-
 const client = axios.create({
   timeout: 5000,
 })
+
+const provider = 'revolt'
 
 let token
 let expires = 0
@@ -85,6 +85,7 @@ const updateMetrics = ({ byType, transformedVehicles }) => {
       id: vehicle.id,
       license: vehicle.license,
       type: vehicle.type,
+      provider,
     }
     prometheus.get('car_lat').set(vehicleLabels, vehicle.lat)
     prometheus.get('car_lng').set(vehicleLabels, vehicle.lng)
@@ -92,22 +93,16 @@ const updateMetrics = ({ byType, transformedVehicles }) => {
     prometheus.get('car_occupied').set(vehicleLabels, vehicle.occupied ? 1 : 0)
   })
   Object.entries(byType).forEach(([type, total]) => {
-    prometheus.get('cars_total').set({ type }, total)
+    prometheus.get('cars_total').set({ type, provider }, total)
   })
 }
 
-module.exports = (config) => {
-  prometheus.setNamespace(config.namespace)
-  prometheus.createGauge('car_lat', 'Latitude position of car', LABELS)
-  prometheus.createGauge('car_lng', 'Longitude position of car', LABELS)
-  prometheus.createGauge('car_capacity', 'Vehicle capacity', LABELS)
-  prometheus.createGauge('car_occupied', 'If vehicle is available', LABELS)
-  prometheus.createGauge('cars_total', 'Total available cars', ['name', 'type'])
+const getMetrics = async (config) => {
+  const data = await getData(config)
+  const parsed = parseData(data)
+  updateMetrics(parsed)
+}
 
-  return {
-    parseData,
-    updateMetrics,
-    getData: () => getData(config),
-    getMetrics: prometheus.getMetrics,
-  }
+module.exports = {
+  getMetrics,
 }

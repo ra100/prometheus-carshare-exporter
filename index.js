@@ -1,24 +1,41 @@
 const express = require('express')
+const prometheus = require('prometheus-wrapper')
+
 const config = require('./config')
+
+const { initPrometheus } = require('./src/common')
 const car4way = require('./src/car4way')
 const revolt = require('./src/revolt')
 
-const { log } = console
+const { log, error } = console
 
-const source = {
+const { providers, port } = config
+
+const sources = {
   car4way,
   revolt,
-}[config.source](config)
+}
+
+initPrometheus()
 
 const app = express()
 
 app.get('/metrics', async (req, res) => {
-  const data = await source.getData()
-  const parsed = source.parseData(data)
-  source.updateMetrics(parsed)
-  res.end(source.getMetrics())
+  const promises = providers.map((provider) => {
+    return sources[provider.source].getMetrics(provider)
+  })
+  try {
+    await Promise.all(promises)
+
+    const metrics = prometheus.getMetrics()
+
+    res.status(200).send(metrics)
+  } catch (e) {
+    error(e)
+    res.status(500).send(e.message)
+  }
 })
 
-app.listen(config.port, () => {
-  log(`Listening on port ${config.port}`)
+app.listen(port, () => {
+  log(`Listening on port ${port}`)
 })

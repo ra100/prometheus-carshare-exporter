@@ -1,11 +1,11 @@
 const prometheus = require('prometheus-wrapper')
 const axios = require('axios')
 
-const LABELS = ['name', 'id', 'license', 'type', 'location']
-
 const client = axios.create({
   timeout: 5000,
 })
+
+const provider = 'car4way'
 
 const parseData = (data) => {
   const { locations, car_categories: carCategories } = data
@@ -75,29 +75,24 @@ const updateMetrics = ({ locations, cars }) => {
       type: car.type,
       location: car.location,
       city: car.city,
+      provider,
     }
     prometheus.get('car_lat').set(carLabels, car.lat)
     prometheus.get('car_lng').set(carLabels, car.lng)
   })
   locations.forEach(({ name, city, type, total }) => {
-    prometheus.get('cars_total').set({ name, city, type }, total)
+    prometheus.get('cars_total').set({ name, city, type, provider }, total)
   })
 }
 
-module.exports = (config) => {
-  prometheus.setNamespace(config.namespace)
-  prometheus.createGauge('car_lat', 'Latitude position of car', LABELS)
-  prometheus.createGauge('car_lng', 'Longitude position of car', LABELS)
-  prometheus.createGauge('cars_total', 'Total available cars', [
-    'name',
-    'city',
-    'type',
-  ])
-  return {
-    parseData,
-    getData: () => getData(config),
-    updateMetrics,
-    getMetrics: prometheus.getMetrics,
-    makeValidJson,
-  }
+const getMetrics = async (config) => {
+  const data = await getData(config)
+  const parsed = parseData(data)
+  updateMetrics(parsed)
+}
+
+module.exports = {
+  getMetrics,
+  makeValidJson,
+  parseData,
 }

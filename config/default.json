@@ -1,8 +1,15 @@
 {
-  "api": "https://app.revolt.city/api",
-  "namespace": "revolt",
   "port": 9017,
-  "source": "revolt",
-  "username": "",
-  "password": ""
+  "providers": [
+    {
+      "api": "https://www.car4way.cz/Upload/data_2017.json",
+      "source": "car4way"
+    },
+    {
+      "api": "https://app.revolt.city/api",
+      "source": "revolt",
+      "username": "",
+      "password": ""
+    }
+  ]
 }
