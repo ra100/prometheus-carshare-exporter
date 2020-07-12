@@ -48,7 +48,10 @@ const getData = async (config) => {
 const parseData = (vehicles) => {
   const types = [false, 'car', false, 'scooter', false, 'kickscooter']
   const transformedVehicles = vehicles
-    .filter(({ vehicle_type: vt, working }) => types[vt] && working)
+    .filter(
+      ({ vehicle_type: vt, working, lat, lng }) =>
+        types[vt] && working && lat !== 0 && lng !== 0
+    )
     .map((vehicle) => ({
       name: vehicle.badge,
       id: vehicle.id,
@@ -86,7 +89,7 @@ const updateMetrics = ({ byType, transformedVehicles }) => {
     prometheus.get('car_lat').set(vehicleLabels, vehicle.lat)
     prometheus.get('car_lng').set(vehicleLabels, vehicle.lng)
     prometheus.get('car_capacity').set(vehicleLabels, vehicle.capacity)
-    prometheus.get('car_occupied').set(vehicleLabels, vehicle.occupied)
+    prometheus.get('car_occupied').set(vehicleLabels, vehicle.occupied ? 1 : 0)
   })
   Object.entries(byType).forEach(([type, total]) => {
     prometheus.get('cars_total').set({ type }, total)
@@ -97,6 +100,8 @@ module.exports = (config) => {
   prometheus.setNamespace(config.namespace)
   prometheus.createGauge('car_lat', 'Latitude position of car', LABELS)
   prometheus.createGauge('car_lng', 'Longitude position of car', LABELS)
+  prometheus.createGauge('car_capacity', 'Vehicle capacity', LABELS)
+  prometheus.createGauge('car_occupied', 'If vehicle is available', LABELS)
   prometheus.createGauge('cars_total', 'Total available cars', ['name', 'type'])
 
   return {
