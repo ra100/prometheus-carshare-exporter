@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/ra100/prometheus-carshare-exporter#readme",
   "dependencies": {
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "express": "^4.17.1",
     "prom-client": "^12.0.0",
     "prometheus-wrapper": "git+https://github.com/ra100/nodejs-prometheus-wrapper.git"
