@@ -5,7 +5,6 @@ const config = require('./config')
 
 const { initPrometheus } = require('./src/common')
 const car4way = require('./src/car4way')
-const revolt = require('./src/revolt')
 
 const { log, error } = console
 
