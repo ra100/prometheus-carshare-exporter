@@ -2,14 +2,9 @@
   "port": 9017,
   "providers": [
     {
-      "api": "https://www.car4way.cz/Upload/data_2017.json",
+      "cars": "https://www.car4way.cz/Upload/data_2017.json",
+      "mapData": "https://www.car4way.cz/Upload/MapData.json",
       "source": "car4way"
-    },
-    {
-      "api": "https://app.revolt.city/api",
-      "source": "revolt",
-      "username": "",
-      "password": ""
     }
   ]
 }

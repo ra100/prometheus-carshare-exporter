@@ -7,56 +7,18 @@ const client = axios.create({
 
 const provider = 'car4way'
 
-const parseData = (data) => {
-  const { locations, car_categories: carCategories } = data
-  const categories = {}
-  const transformedLocations = []
-  let cars = []
-  carCategories.forEach((category) => {
-    categories[category.category_id] = category
-  })
-  locations.forEach((location) => {
-    const { city } = location
-    const locationName = location.location_name
-    const locationTypes = {}
-    location.cars.forEach((car) => {
-      const type = categories[car.car_category_id].category_name
-      locationTypes[type] = (locationTypes[type] || 0) + 1
-    })
-    Object.entries(locationTypes).forEach(([type, count]) => {
-      transformedLocations.push({
-        name: locationName,
-        total: count,
-        type,
-        city,
-      })
-    })
-    cars = cars.concat(
-      location.cars.map((car) => {
-        const type = categories[car.car_category_id].category_name
-        return {
-          name: `${type} - ${car.id}`,
-          id: car.id,
-          license: car.license_plate_number,
-          type,
-          location: locationName,
-          city,
-          lat: Number(car.position.lat),
-          lng: Number(car.position.lon),
-        }
-      })
-    )
-  })
-  return { locations: transformedLocations, cars }
-}
-
 // car4way returns var data = {}; in .json, WTF?
 const makeValidJson = (data) =>
-  JSON.parse(data.replace(/^.*=\s*/, '').replace(';', ''))
+  JSON.parse(
+    data
+      .replace(/var availableCategories.*$/, '')
+      .replace('var data =', '')
+      .replace(';', '')
+  )
 
-const getData = (config) =>
+const getData = (url) =>
   client
-    .get(config.api)
+    .get(url)
     .then((response) => {
       const { data } = response
       return makeValidJson(data)
@@ -85,14 +47,65 @@ const updateMetrics = ({ locations, cars }) => {
   })
 }
 
+const getCarPlates = ({ locations }) => {
+  const cars = locations.flatMap(({ cars }) =>
+    cars.map(({ id, license_plate_number }) => [id, license_plate_number])
+  )
+
+  return new Map(cars)
+}
+
+const getCategories = ({ CarCategories }) =>
+  new Map(CarCategories.map(({ Id, Name }) => [Id, Name]))
+
+const getLocations = ({ Locations }) =>
+  new Map(
+    Locations.map(({ Id, Name, City }) => [Id, { name: Name, city: City }])
+  )
+
+const getCars = ({ Locations }, categories, locations, plates) =>
+  Locations.flatMap(({ Cars }) => Cars).map(
+    ({ Id, CategoryId, LocationId, Position }) => ({
+      name: `${categories.get(CategoryId) || 'N/A'} - ${Id}`,
+      id: Id,
+      license: plates.get(Id) || 'N/A',
+      type: categories.get(CategoryId) || 'N/A',
+      location: (locations.get(LocationId) || { name: 'N/A' }).name,
+      city: (locations.get(LocationId) || { city: 'N/A' }).city,
+      lat: Number(Position.Lat),
+      lng: Number(Position.Lon),
+    })
+  )
+
+const getLocationCounts = (cars) => {
+  const locations = cars.reduce((acc, car) => {
+    const { location, city, type } = car
+    const key = `${type} - ${city}`
+    if (!acc[key]) {
+      acc[key] = {
+        name: location,
+        city,
+        type,
+        total: 0,
+      }
+    }
+    acc[key].total += 1
+    return acc
+  }, {})
+
+  return Object.values(locations)
+}
+
 const getMetrics = async (config) => {
-  const data = await getData(config)
-  const parsed = parseData(data)
-  updateMetrics(parsed)
+  const plates = getCarPlates(await getData(config.cars))
+  const mapData = await getData(config.mapData)
+  const categories = getCategories(mapData)
+  const locations = getLocations(mapData)
+  const cars = getCars(mapData, categories, locations, plates)
+  updateMetrics({ cars, locations: getLocationCounts(cars) })
 }
 
 module.exports = {
   getMetrics,
   makeValidJson,
-  parseData,
 }

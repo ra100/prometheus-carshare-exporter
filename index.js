@@ -12,7 +12,6 @@ const { providers, port } = config
 
 const sources = {
   car4way,
-  revolt,
 }
 
 initPrometheus()
