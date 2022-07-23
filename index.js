@@ -24,10 +24,11 @@ app.get('/metrics', async (req, res) => {
   const promises = providers.map((provider) => {
     return sources[provider.source].getMetrics(provider)
   })
+
   try {
     await Promise.all(promises)
 
-    const metrics = prometheus.getMetrics()
+    const metrics = await prometheus.getMetrics()
 
     res.status(200).send(metrics)
   } catch (e) {
